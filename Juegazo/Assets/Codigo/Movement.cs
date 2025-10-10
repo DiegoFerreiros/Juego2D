@@ -1,16 +1,14 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Movement : MonoBehaviour
 {
     [SerializeField] Rigidbody2D rb;
-    //[SerializeField] EdgeCollider2D coll;
     [SerializeField] CapsuleCollider2D coll;
     [SerializeField] LayerMask jumpableGround;
-    [SerializeField] int saltos = 0;
-
     [SerializeField] int vidas = 3;
 
-    enum AnimationType { idle, running, jumping }
+    enum AnimationType { idle, running, jumping, falling, att1, att2, death }
     AnimationType state = AnimationType.idle;
     SpriteRenderer sr;
 
@@ -25,7 +23,6 @@ public class Movement : MonoBehaviour
 
     void Update()
     {
-
         state = AnimationType.idle;
         // state:
         //      0: idle
@@ -38,7 +35,7 @@ public class Movement : MonoBehaviour
         //      7: 
 
 
-        if (Keyboard.current.dKey.isPressed())
+        if (Keyboard.current.dKey.IsPressed())
         {
             state = AnimationType.running;
             sr.flipX = false;
@@ -67,24 +64,7 @@ public class Movement : MonoBehaviour
         {
             state = AnimationType.jumping;
             rb.linearVelocityY = 5;
-            saltos = 1;
         }
-
-        if (saltos == 1 && !isGround())
-        {
-            if (Keyboard.current.spaceKey.wasPressedThisFrame)
-            {
-                state = AnimationType.jumping;
-                rb.linearVelocityY += 7;
-                saltos = 2;
-            }
-        }
-
-        if (saltos == 2)
-        {
-            saltos = 0;
-        }
-
         animator.SetInteger("estado", (int)state);
 
     }
