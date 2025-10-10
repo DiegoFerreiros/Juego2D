@@ -27,6 +27,16 @@ public class Movement : MonoBehaviour
     {
 
         state = AnimationType.idle;
+        // state:
+        //      0: idle
+        //      1: run
+        //      2: jump
+        //      3: fall
+        //      4: att1
+        //      5: att2
+        //      6: death
+        //      7: 
+
 
         if (Keyboard.current.dKey.isPressed())
         {
@@ -92,7 +102,7 @@ public class Movement : MonoBehaviour
     private void ReiniciarJuego()
     {
         vidas--;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
