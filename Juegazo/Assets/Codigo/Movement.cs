@@ -12,10 +12,18 @@ public class Movement : MonoBehaviour
     AnimationType state = AnimationType.idle;
     SpriteRenderer sr;
 
+    bool isAttacking = false;
+
+    bool canCombo = false;
+    float comboTimer = 0f;
+    float comboWindow = 1f; // 1 segundo para pulsar F otra vez
+
+
     Animator animator;
 
     void Start()
     {
+        rb = GetComponent<Rigidbody2D>();
         coll = GetComponent<CapsuleCollider2D>();
         animator = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
@@ -23,7 +31,18 @@ public class Movement : MonoBehaviour
 
     void Update()
     {
+
+        if (isAttacking)
+        {
+            if (Keyboard.current.fKey.wasPressedThisFrame)
+            {
+                canCombo = true;
+            }
+            return;
+        }
+
         state = AnimationType.idle;
+
         // state:
         //      0: idle
         //      1: run
@@ -53,6 +72,10 @@ public class Movement : MonoBehaviour
                 rb.linearVelocityX -= 0.2f;
             }
         }
+        else
+        {
+            rb.linearVelocityX = 0f;
+        }
 
         // Frenar de vez
         if (Keyboard.current.sKey.wasPressedThisFrame)
@@ -65,9 +88,51 @@ public class Movement : MonoBehaviour
             state = AnimationType.jumping;
             rb.linearVelocityY = 5;
         }
-        animator.SetInteger("estado", (int)state);
+
+        if (rb.linearVelocity.y < -0.1f && !isGround())
+        {
+            state = AnimationType.falling;
+        }
+
+
+        if (Keyboard.current.fKey.wasPressedThisFrame)
+        {
+            Attack(1);
+        }
+
+        animator.SetInteger("State", (int)state);
 
     }
+    
+    private void Attack(int attackNumber)
+    {
+        isAttacking = true;
+        canCombo = false;
+        comboTimer = 0f;
+
+        if (attackNumber == 1)
+            state = AnimationType.att1;
+        else
+            state = AnimationType.att2;
+
+        animator.SetInteger("State", (int)state);
+    }
+
+    // Este método lo llamaremos desde el evento del final de la animación
+    public void OnAttackEnd()
+    {
+        if (canCombo)
+        {
+            Attack(2);
+        }
+        else
+        {
+            isAttacking = false;
+            state = AnimationType.idle;
+            animator.SetInteger("State", (int)state);
+        }
+    }
+
 
 
     private bool isGround() => Physics2D.BoxCast(
@@ -81,7 +146,7 @@ public class Movement : MonoBehaviour
 
     private void ReiniciarJuego()
     {
-        vidas--;
+        //vidas--;
         //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
