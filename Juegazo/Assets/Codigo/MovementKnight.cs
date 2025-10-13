@@ -139,6 +139,7 @@ public class Movement1 : MonoBehaviour
         if (Keyboard.current.shiftKey.isPressed)
         {
             state = AnimationType.sliding;
+            
         }
 
         animator.SetInteger("state", (int)state);
