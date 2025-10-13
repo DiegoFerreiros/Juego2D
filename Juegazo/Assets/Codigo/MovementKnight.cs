@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Movement1 : MonoBehaviour
 {
@@ -16,25 +17,154 @@ public class Movement1 : MonoBehaviour
     */
 
     // state:
-    // 1: idle 
-    // 2: run 
-    // 3: slide
-    // 4: jump
-    // 5: jump -> fall 
-    // 6: fall -> debería activarse despues de la transicion de salto a caida 
+    // 0: idle 
+    // 1: run 
+    // 2: slide
+    // 3: jump
+    // 4: jump -> fall 
+    // 5: fall -> debería activarse despues de la transicion de salto a caida 
     //            o cuando velocidad Y es negativa (así siempre q se caiga, sin necesidad de saltar, se activa)
-    // 7: attack
+    // 6: attack
+    // 7: death
     // 8: wall slide -> intentar lo del wall jump
-    // 9: death
-    // 10: turn around si me da tiempo
+    // 9: turn around si me da tiempo
 
+    [SerializeField] Rigidbody2D rb;
+    [SerializeField] BoxCollider2D coll;
+    [SerializeField] LayerMask jumpableGround;
+    [SerializeField] int vidas = 3;
+    enum AnimationType { idle, running, sliding, jumping, transitioning, falling, attacking, death, wallSlide, turnAround }
+    AnimationType state = AnimationType.idle;
+    SpriteRenderer sr;
+    Animator animator;
 
     void Start()
     {
-        
+        rb = GetComponent<Rigidbody2D>();
+        coll = GetComponent<BoxCollider2D>();
+        animator = GetComponent<Animator>();
+        sr = GetComponent<SpriteRenderer>();
     }
 
     void Update()
+    {
+        state = AnimationType.idle;
+
+        if (isGround())
+        {
+            if (Keyboard.current.dKey.IsPressed())
+            {
+                state = AnimationType.running;
+                sr.flipX = false;
+                if (rb.linearVelocityX <= 5)
+                {
+                    rb.linearVelocityX += 0.2f;
+                }
+            }
+            else if (Keyboard.current.aKey.isPressed)
+            {
+                state = AnimationType.running;
+                sr.flipX = true;
+                if (rb.linearVelocityX >= -5)
+                {
+                    rb.linearVelocityX -= 0.2f;
+                }
+            }
+            else
+            {
+                rb.linearVelocityX = 0f;
+            }
+        }
+
+        if (!isGround())
+        {
+            if (Keyboard.current.dKey.IsPressed())
+            {
+                sr.flipX = false;
+                if (rb.linearVelocityX <= 5)
+                {
+                    rb.linearVelocityX += 0.1f;
+                }
+            }
+            else if (Keyboard.current.aKey.isPressed)
+            {
+                sr.flipX = true;
+                if (rb.linearVelocityX >= -5)
+                {
+                    rb.linearVelocityX -= 0.1f;
+                }
+            }
+            else
+            {
+                rb.linearVelocityX = 0f;
+            }
+        }
+        
+
+        if (Keyboard.current.spaceKey.wasPressedThisFrame && isGround())
+        {
+            state = AnimationType.jumping;
+            rb.linearVelocityY = 5;
+        }
+
+        if (!isGround())
+        {
+            // Si todavía sube
+            if (rb.linearVelocity.y > 0.1f)
+            {
+                state = AnimationType.jumping;
+            }
+            // Si está justo en el punto alto (ni sube ni cae)
+            else if (rb.linearVelocity.y <= 0.1f && rb.linearVelocity.y > -0.1f)
+            {
+                state = AnimationType.transitioning;
+            }
+            // Si ya cae con fuerza
+            else if (rb.linearVelocity.y < -0.1f)
+            {
+                state = AnimationType.falling;
+            }
+        }
+
+        if (isGround() && (state == AnimationType.falling || state == AnimationType.transitioning))
+        {
+            state = AnimationType.idle;
+        }
+
+        if (Keyboard.current.fKey.wasPressedThisFrame)
+        {
+            state = AnimationType.attacking;
+        }
+
+        animator.SetInteger("state", (int)state);
+
+    }
+
+
+    private bool isGround() => Physics2D.BoxCast(
+        coll.bounds.center,
+        coll.bounds.size,
+        0f,
+        Vector2.down,
+        .1f,
+        jumpableGround
+    );
+
+    private void ReiniciarJuego()
+    {
+        //vidas--;
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Muerte"))
+        {
+            ReiniciarJuego();
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D collision)
     {
         
     }
