@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class Movement1 : MonoBehaviour
 {
@@ -31,6 +32,10 @@ public class Movement1 : MonoBehaviour
 
     [SerializeField] Rigidbody2D rb;
     [SerializeField] BoxCollider2D coll;
+    [SerializeField] CapsuleCollider2D collNormal;
+    [SerializeField] CapsuleCollider2D collSliding;
+    [SerializeField] BoxCollider2D wallCheckLeft;
+    [SerializeField] BoxCollider2D wallCheckRight;
     [SerializeField] LayerMask jumpableGround;
     [SerializeField] int vidas = 3;
     enum AnimationType { idle, running, sliding, jumping, transitioning, falling, attacking, death, wallSlide, turnAround }
@@ -38,10 +43,15 @@ public class Movement1 : MonoBehaviour
     SpriteRenderer sr;
     Animator animator;
 
+
+
+
+    public string wallLayerName = "Wall"; // Nombre de la capa de las paredes
+    public bool isTouchingWall = false;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        coll = GetComponent<BoxCollider2D>();
         animator = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
     }
@@ -49,6 +59,8 @@ public class Movement1 : MonoBehaviour
     void Update()
     {
         state = AnimationType.idle;
+        collNormal.enabled = true;
+        collSliding.enabled = false;
 
         if (isGround())
         {
@@ -109,7 +121,7 @@ public class Movement1 : MonoBehaviour
 
         if (!isGround())
         {
-            // Si todavía sube
+            // Si todavia sube
             if (rb.linearVelocity.y > 0.1f)
             {
                 state = AnimationType.jumping;
@@ -126,7 +138,7 @@ public class Movement1 : MonoBehaviour
             }
         }
 
-        if (isGround() && (state == AnimationType.falling || state == AnimationType.transitioning))
+        if (isGround() && (state == AnimationType.falling || state == AnimationType.transitioning || state == AnimationType.jumping))
         {
             state = AnimationType.idle;
         }
@@ -138,8 +150,9 @@ public class Movement1 : MonoBehaviour
 
         if (Keyboard.current.shiftKey.isPressed)
         {
+            collNormal.enabled = false;
+            collSliding.enabled = true;
             state = AnimationType.sliding;
-            
         }
 
         animator.SetInteger("state", (int)state);
@@ -155,17 +168,19 @@ public class Movement1 : MonoBehaviour
         .1f,
         jumpableGround
     );
+    
 
     private void ReiniciarJuego()
     {
         //vidas--;
-        //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Muerte"))
+        if (collision.gameObject.CompareTag("Dead"))
         {
+            state = AnimationType.death;
             ReiniciarJuego();
         }
     }
