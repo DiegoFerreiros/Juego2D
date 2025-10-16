@@ -13,7 +13,13 @@ public class Movement1 : MonoBehaviour
 
     Variable de control para poder atacar y que no se cancele al instante con otra animacion
 
-    
+    Checkpoints
+
+    Guia de controles al empezar a jugar
+
+    Menú de inicio y fin
+
+
 
     */
 
@@ -37,17 +43,13 @@ public class Movement1 : MonoBehaviour
     [SerializeField] BoxCollider2D wallCheckLeft;
     [SerializeField] BoxCollider2D wallCheckRight;
     [SerializeField] LayerMask jumpableGround;
+    [SerializeField] LayerMask leftWall;
+    [SerializeField] LayerMask rightWall;
     [SerializeField] int vidas = 3;
     enum AnimationType { idle, running, sliding, jumping, transitioning, falling, attacking, death, wallSlide, turnAround }
     AnimationType state = AnimationType.idle;
     SpriteRenderer sr;
     Animator animator;
-
-
-
-
-    public string wallLayerName = "Wall"; // Nombre de la capa de las paredes
-    public bool isTouchingWall = false;
 
     void Start()
     {
@@ -58,6 +60,7 @@ public class Movement1 : MonoBehaviour
 
     void Update()
     {
+        rb.gravityScale = 1f;
         state = AnimationType.idle;
         collNormal.enabled = true;
         collSliding.enabled = false;
@@ -119,7 +122,19 @@ public class Movement1 : MonoBehaviour
             rb.linearVelocityY = 5;
         }
 
-        if (!isGround())
+        if (isRightWall() && !isGround())
+        {
+            sr.flipX = true;
+            state = AnimationType.wallSlide;
+            rb.gravityScale = 0.2f;
+        }
+        else if (isLeftWall() && !isGround())
+        {
+            sr.flipX = false;
+            state = AnimationType.wallSlide;
+            rb.gravityScale = 0.2f;
+        }
+        else if (!isGround())
         {
             // Si todavia sube
             if (rb.linearVelocity.y > 0.1f)
@@ -143,7 +158,7 @@ public class Movement1 : MonoBehaviour
             state = AnimationType.idle;
         }
 
-        if (Keyboard.current.fKey.wasPressedThisFrame)
+        if (Keyboard.current.fKey.isPressed)
         {
             state = AnimationType.attacking;
         }
@@ -167,6 +182,24 @@ public class Movement1 : MonoBehaviour
         Vector2.down,
         .1f,
         jumpableGround
+    );
+
+    private bool isLeftWall() => Physics2D.BoxCast(
+        wallCheckLeft.bounds.center,
+        wallCheckLeft.bounds.size,
+        0f,
+        Vector2.left,
+        .1f,
+        leftWall
+    );
+
+    private bool isRightWall() => Physics2D.BoxCast(
+        wallCheckRight.bounds.center,
+        wallCheckRight.bounds.size,
+        0f,
+        Vector2.right,
+        .1f,
+        rightWall
     );
     
 
