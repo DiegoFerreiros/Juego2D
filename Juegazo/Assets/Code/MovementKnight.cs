@@ -40,6 +40,9 @@ public class Movement1 : MonoBehaviour
     [SerializeField] BoxCollider2D coll;
     [SerializeField] CapsuleCollider2D collNormal;
     [SerializeField] CapsuleCollider2D collSliding;
+
+    [SerializeField] CapsuleCollider2D collAttacking;
+
     [SerializeField] BoxCollider2D wallCheckLeft;
     [SerializeField] BoxCollider2D wallCheckRight;
     [SerializeField] LayerMask jumpableGround;
@@ -60,14 +63,14 @@ public class Movement1 : MonoBehaviour
 
     void Update()
     {
-        rb.gravityScale = 1f;
-        state = AnimationType.idle;
         collNormal.enabled = true;
         collSliding.enabled = false;
 
         if (isGround())
         {
-            if (Keyboard.current.dKey.IsPressed())
+            state = AnimationType.idle;
+
+            if (Keyboard.current.dKey.IsPressed() && (state != AnimationType.wallSlide))
             {
                 state = AnimationType.running;
                 sr.flipX = false;
@@ -75,8 +78,18 @@ public class Movement1 : MonoBehaviour
                 {
                     rb.linearVelocityX += 0.2f;
                 }
+
+                if (Keyboard.current.shiftKey.wasPressedThisFrame)
+                {
+                    collNormal.enabled = false;
+                    collSliding.enabled = true;
+                    state = AnimationType.sliding;
+                    rb.linearVelocityX = 8f;
+                }
+            
+
             }
-            else if (Keyboard.current.aKey.isPressed)
+            else if (Keyboard.current.aKey.isPressed && (state != AnimationType.wallSlide))
             {
                 state = AnimationType.running;
                 sr.flipX = true;
@@ -84,16 +97,31 @@ public class Movement1 : MonoBehaviour
                 {
                     rb.linearVelocityX -= 0.2f;
                 }
+
+                if (Keyboard.current.shiftKey.wasPressedThisFrame)
+                {
+                    collNormal.enabled = false;
+                    collSliding.enabled = true;
+                    state = AnimationType.sliding;
+                    rb.linearVelocityX = -8f;
+                }
             }
-            else
+            else if (state != AnimationType.wallSlide)
             {
                 rb.linearVelocityX = 0f;
             }
+
+            if (Keyboard.current.spaceKey.wasPressedThisFrame && state != AnimationType.wallSlide)
+            {
+                state = AnimationType.jumping;
+                rb.linearVelocityY = 5;
+            }
+        
         }
 
         if (!isGround())
         {
-            if (Keyboard.current.dKey.IsPressed())
+            if (Keyboard.current.dKey.IsPressed() && (state != AnimationType.wallSlide || state != AnimationType.sliding))
             {
                 sr.flipX = false;
                 if (rb.linearVelocityX <= 5)
@@ -101,7 +129,7 @@ public class Movement1 : MonoBehaviour
                     rb.linearVelocityX += 0.1f;
                 }
             }
-            else if (Keyboard.current.aKey.isPressed)
+            else if (Keyboard.current.aKey.isPressed && (state != AnimationType.wallSlide || state != AnimationType.sliding))
             {
                 sr.flipX = true;
                 if (rb.linearVelocityX >= -5)
@@ -109,30 +137,35 @@ public class Movement1 : MonoBehaviour
                     rb.linearVelocityX -= 0.1f;
                 }
             }
-            else
+            else if (state != AnimationType.wallSlide || state != AnimationType.sliding)
             {
                 rb.linearVelocityX = 0f;
             }
-        }
-        
-
-        if (Keyboard.current.spaceKey.wasPressedThisFrame && isGround())
-        {
-            state = AnimationType.jumping;
-            rb.linearVelocityY = 5;
         }
 
         if (isRightWall() && !isGround())
         {
             sr.flipX = true;
             state = AnimationType.wallSlide;
-            rb.gravityScale = 0.2f;
+
+            if (Keyboard.current.spaceKey.wasPressedThisFrame  && Keyboard.current.aKey.isPressed)
+            {
+                state = AnimationType.jumping;
+                rb.linearVelocityY = 5;
+                rb.linearVelocityX = -5;
+            }
         }
         else if (isLeftWall() && !isGround())
         {
             sr.flipX = false;
             state = AnimationType.wallSlide;
-            rb.gravityScale = 0.2f;
+
+            if (Keyboard.current.spaceKey.wasPressedThisFrame && Keyboard.current.dKey.isPressed)
+            {
+                state = AnimationType.jumping;
+                rb.linearVelocityY = 5;
+                rb.linearVelocityX = 5;
+            }
         }
         else if (!isGround())
         {
@@ -158,20 +191,12 @@ public class Movement1 : MonoBehaviour
             state = AnimationType.idle;
         }
 
-        if (Keyboard.current.fKey.isPressed)
+        if (Keyboard.current.fKey.wasPressedThisFrame)
         {
             state = AnimationType.attacking;
         }
 
-        if (Keyboard.current.shiftKey.isPressed)
-        {
-            collNormal.enabled = false;
-            collSliding.enabled = true;
-            state = AnimationType.sliding;
-        }
-
         animator.SetInteger("state", (int)state);
-
     }
 
 
