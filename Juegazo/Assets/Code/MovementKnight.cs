@@ -4,43 +4,18 @@ using UnityEngine.SceneManagement;
 
 public class Movement1 : MonoBehaviour
 {
-
     /*
-
-    Doble collider:
-        Capsule para colisionar
-        Box como sensor para detectar el suerlo y q flote en algunos sitios
-
-    Variable de control para poder atacar y que no se cancele al instante con otra animacion
-
-    Checkpoints
-
-    Guia de controles al empezar a jugar
-
-    Menú de inicio y fin
-
-
+    
+    Checkpoints 
+    Guia de controles al empezar a jugar 
+    Menú de inicio y fin 
 
     */
-
-    // state:
-    // 0: idle 
-    // 1: run 
-    // 2: slide
-    // 3: jump
-    // 4: jump -> fall 
-    // 5: fall -> debería activarse despues de la transicion de salto a caida 
-    //            o cuando velocidad Y es negativa (así siempre q se caiga, sin necesidad de saltar, se activa)
-    // 6: attack
-    // 7: death
-    // 8: wall slide -> intentar lo del wall jump
-    // 9: turn around si me da tiempo
 
     [SerializeField] Rigidbody2D rb;
     [SerializeField] BoxCollider2D coll;
     [SerializeField] CapsuleCollider2D collNormal;
-    [SerializeField] CapsuleCollider2D collSliding;
-
+    [SerializeField] CapsuleCollider2D collCrouching;
     [SerializeField] CapsuleCollider2D collAttacking;
 
     [SerializeField] BoxCollider2D wallCheckLeft;
@@ -49,79 +24,124 @@ public class Movement1 : MonoBehaviour
     [SerializeField] LayerMask leftWall;
     [SerializeField] LayerMask rightWall;
     [SerializeField] int vidas = 3;
-    enum AnimationType { idle, running, sliding, jumping, transitioning, falling, attacking, death, wallSlide, turnAround }
+
+    enum AnimationType { idle, running, crouching, jumping, transitioning, falling, attacking, death, wallSlide, crouchingTrans, crouchingWalk }
     AnimationType state = AnimationType.idle;
+
     SpriteRenderer sr;
     Animator animator;
+
+    bool isCrouched = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
+        collNormal.enabled = true;
+        collCrouching.enabled = false;
     }
 
     void Update()
     {
-        collNormal.enabled = true;
-        collSliding.enabled = false;
-
+        // --------------------- moverse en el suelo ----------------- 
         if (isGround())
         {
-            state = AnimationType.idle;
-
-            if (Keyboard.current.dKey.IsPressed() && (state != AnimationType.wallSlide))
+            if (Keyboard.current.ctrlKey.wasPressedThisFrame)
             {
-                state = AnimationType.running;
-                sr.flipX = false;
-                if (rb.linearVelocityX <= 5)
-                {
-                    rb.linearVelocityX += 0.2f;
-                }
+                isCrouched = !isCrouched; // Toggle
 
-                if (Keyboard.current.shiftKey.wasPressedThisFrame)
-                {
-                    collNormal.enabled = false;
-                    collSliding.enabled = true;
-                    state = AnimationType.sliding;
-                    rb.linearVelocityX = 8f;
-                }
-            
+                state = AnimationType.crouchingTrans;
+                animator.SetInteger("state", (int)state);
 
-            }
-            else if (Keyboard.current.aKey.isPressed && (state != AnimationType.wallSlide))
-            {
-                state = AnimationType.running;
-                sr.flipX = true;
-                if (rb.linearVelocityX >= -5)
+                if (state == AnimationType.crouchingTrans)
                 {
-                    rb.linearVelocityX -= 0.2f;
-                }
-
-                if (Keyboard.current.shiftKey.wasPressedThisFrame)
-                {
-                    collNormal.enabled = false;
-                    collSliding.enabled = true;
-                    state = AnimationType.sliding;
-                    rb.linearVelocityX = -8f;
+                    if (isCrouched)
+                    {
+                        // Inicia transición hacia agachado
+                        collNormal.enabled = false;
+                        collCrouching.enabled = true;
+                        state = AnimationType.crouching;
+                    }
+                    else
+                    {
+                        // Inicia transición hacia levantado
+                        collNormal.enabled = true;
+                        collCrouching.enabled = false;
+                        state = AnimationType.idle;
+                    }
                 }
             }
-            else if (state != AnimationType.wallSlide)
-            {
-                rb.linearVelocityX = 0f;
-            }
 
-            if (Keyboard.current.spaceKey.wasPressedThisFrame && state != AnimationType.wallSlide)
+            // --- Si está agachado ---
+            if (isCrouched)
             {
-                state = AnimationType.jumping;
-                rb.linearVelocityY = 5;
+                if (Keyboard.current.dKey.isPressed)
+                {
+                    state = AnimationType.crouchingWalk;
+                    sr.flipX = false;
+                    if (rb.linearVelocityX <= 5)
+                    {
+                        rb.linearVelocityX += 0.1f;
+                    }
+                }
+                else if (Keyboard.current.aKey.isPressed)
+                {
+                    state = AnimationType.crouchingWalk;
+                    sr.flipX = true;
+                    if (rb.linearVelocityX >= -5)
+                    {
+                        rb.linearVelocityX -= 0.1f;
+                    }
+                }
+                else
+                {
+                    state = AnimationType.crouching;
+                    rb.linearVelocityX = 0f;
+                }
             }
-        
+            else
+            {
+                // --- Movimiento normal ---
+                state = AnimationType.idle;
+
+                if (Keyboard.current.dKey.isPressed)
+                {
+                    state = AnimationType.running;
+                    sr.flipX = false;
+                    if (rb.linearVelocityX <= 5)
+                    {
+                        rb.linearVelocityX += 0.2f;
+                    }
+
+                }
+                else if (Keyboard.current.aKey.isPressed)
+                {
+                    state = AnimationType.running;
+                    sr.flipX = true;
+                    if (rb.linearVelocityX >= -5)
+                    {
+                        rb.linearVelocityX -= 0.2f;
+                    }
+
+                }
+                else
+                {
+                    rb.linearVelocityX = 0f;
+                }
+
+                if (Keyboard.current.spaceKey.wasPressedThisFrame)
+                {
+                    state = AnimationType.jumping;
+                    rb.linearVelocityY = 5f;
+                }
+            }
         }
 
-        if (!isGround())
+        // --------------------- moverse en el aire ----------------- 
+        if (!isGround() && state != AnimationType.wallSlide)
         {
-            if (Keyboard.current.dKey.IsPressed() && (state != AnimationType.wallSlide || state != AnimationType.sliding))
+            if (Keyboard.current.dKey.isPressed)
             {
                 sr.flipX = false;
                 if (rb.linearVelocityX <= 5)
@@ -129,7 +149,7 @@ public class Movement1 : MonoBehaviour
                     rb.linearVelocityX += 0.1f;
                 }
             }
-            else if (Keyboard.current.aKey.isPressed && (state != AnimationType.wallSlide || state != AnimationType.sliding))
+            else if (Keyboard.current.aKey.isPressed)
             {
                 sr.flipX = true;
                 if (rb.linearVelocityX >= -5)
@@ -137,49 +157,39 @@ public class Movement1 : MonoBehaviour
                     rb.linearVelocityX -= 0.1f;
                 }
             }
-            else if (state != AnimationType.wallSlide || state != AnimationType.sliding)
-            {
-                rb.linearVelocityX = 0f;
-            }
         }
 
-        if (isRightWall() && !isGround())
+        // --------------------- wall slide ----------------- 
+        if (!isGround() && (isLeftWall() || isRightWall()))
         {
-            sr.flipX = true;
             state = AnimationType.wallSlide;
 
-            if (Keyboard.current.spaceKey.wasPressedThisFrame  && Keyboard.current.aKey.isPressed)
+            float wallSlideSpeed = -2f;
+            if (rb.linearVelocityY < wallSlideSpeed)
             {
-                state = AnimationType.jumping;
-                rb.linearVelocityY = 5;
-                rb.linearVelocityX = -5;
+                rb.linearVelocityY = wallSlideSpeed;
             }
-        }
-        else if (isLeftWall() && !isGround())
-        {
-            sr.flipX = false;
-            state = AnimationType.wallSlide;
 
-            if (Keyboard.current.spaceKey.wasPressedThisFrame && Keyboard.current.dKey.isPressed)
+            sr.flipX = isRightWall();
+
+            if (Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 state = AnimationType.jumping;
-                rb.linearVelocityY = 5;
-                rb.linearVelocityX = 5;
+                float jumpX = isRightWall() ? -5f : 5f;
+                float jumpY = 5f;
+                rb.linearVelocity = new Vector2(jumpX, jumpY);
             }
         }
         else if (!isGround())
         {
-            // Si todavia sube
             if (rb.linearVelocity.y > 0.1f)
             {
                 state = AnimationType.jumping;
             }
-            // Si está justo en el punto alto (ni sube ni cae)
             else if (rb.linearVelocity.y <= 0.1f && rb.linearVelocity.y > -0.1f)
             {
                 state = AnimationType.transitioning;
             }
-            // Si ya cae con fuerza
             else if (rb.linearVelocity.y < -0.1f)
             {
                 state = AnimationType.falling;
@@ -191,7 +201,8 @@ public class Movement1 : MonoBehaviour
             state = AnimationType.idle;
         }
 
-        if (Keyboard.current.fKey.wasPressedThisFrame)
+        // --------------------- atacar ----------------- 
+        if (Keyboard.current.fKey.wasPressedThisFrame || Mouse.current.rightButton.wasPressedThisFrame)
         {
             state = AnimationType.attacking;
         }
@@ -199,13 +210,12 @@ public class Movement1 : MonoBehaviour
         animator.SetInteger("state", (int)state);
     }
 
-
     private bool isGround() => Physics2D.BoxCast(
         coll.bounds.center,
         coll.bounds.size,
         0f,
         Vector2.down,
-        .1f,
+        0.1f,
         jumpableGround
     );
 
@@ -214,7 +224,7 @@ public class Movement1 : MonoBehaviour
         wallCheckLeft.bounds.size,
         0f,
         Vector2.left,
-        .1f,
+        0.1f,
         leftWall
     );
 
@@ -223,14 +233,12 @@ public class Movement1 : MonoBehaviour
         wallCheckRight.bounds.size,
         0f,
         Vector2.right,
-        .1f,
+        0.1f,
         rightWall
     );
-    
 
     private void ReiniciarJuego()
     {
-        //vidas--;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
@@ -241,10 +249,5 @@ public class Movement1 : MonoBehaviour
             state = AnimationType.death;
             ReiniciarJuego();
         }
-    }
-
-    void OnTriggerEnter2D(Collider2D collision)
-    {
-        
     }
 }
