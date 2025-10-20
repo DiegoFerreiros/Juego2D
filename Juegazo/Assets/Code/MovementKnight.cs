@@ -202,9 +202,10 @@ public class Movement1 : MonoBehaviour
         }
 
         // --------------------- atacar ----------------- 
-        if (Keyboard.current.fKey.wasPressedThisFrame || Mouse.current.rightButton.wasPressedThisFrame)
+        if (Keyboard.current.fKey.wasPressedThisFrame || Mouse.current.leftButton.wasPressedThisFrame)
         {
             state = AnimationType.attacking;
+            rb.linearVelocityX = 0f;
         }
 
         animator.SetInteger("state", (int)state);
