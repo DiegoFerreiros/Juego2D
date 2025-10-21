@@ -3,8 +3,8 @@ using UnityEngine;
 public class FallingTile : MonoBehaviour
 {
     enum AnimationType { idle, breaking }
-    public float fallingTime = 0.01f;
-    public float breakingTime = 0.001f;
+    private float fallingTime = 0.5f;
+    private float breakingTime = 0.5f;
     private Animator animator;
     private Rigidbody2D rb;
     private float timer = 0f;
@@ -25,6 +25,9 @@ public class FallingTile : MonoBehaviour
             timer += Time.deltaTime;
             if (timer >= breakingTime)
             {
+                rb.bodyType = RigidbodyType2D.Dynamic;
+                rb.gravityScale = 2f;
+                playerTouched = false;
                 Destroy(gameObject, fallingTime);
             }
         }
@@ -37,9 +40,6 @@ public class FallingTile : MonoBehaviour
             if (animator != null)
             {
                 animator.SetInteger("fallingState", (int)AnimationType.breaking);
-                rb.bodyType = RigidbodyType2D.Dynamic;
-                rb.gravityScale = 2f;
-                playerTouched = false;
             }
             playerTouched = true;
             timer = 0f;

@@ -9,6 +9,8 @@ public class MovementKnight : MonoBehaviour
     Guia de controles al empezar a jugar 
     Menú de inicio y fin 
 
+    Pantalla inicio/muerte a lo dark souls con degradado como si se escurece la pantalla hasta llegar a la de muerte
+
     */
 
     public Rigidbody2D rb;
@@ -34,12 +36,12 @@ public class MovementKnight : MonoBehaviour
 
     bool isCrouched = false;
 
-    [SerializeField] private float tiempoInvencible = 1f;
+    private float tiempoInvencible = 1f;
     private bool esInvencible = false;
     private float timerInvencible = 0f;
 
     [SerializeField] private GameObject vidaCero;
-    [SerializeField] private float duracionAnimacionDeath = 0.5f;
+    private float duracionAnimacionDeath = 0.2f;
 
     private bool estaMuerto = false;
     private float timerDeath = 0f;
@@ -240,9 +242,7 @@ public class MovementKnight : MonoBehaviour
         }
 
         // al morir se espera a la animacion death, luego se reinicia
-
-        // FALLAAAAA NO SE HACE LA ANIMACION DE MORIR, PERO SI QUE ESPERA EL TIEMPO PUESTO
-        if (estaMuerto)
+        if (estaMuerto)     // FALLAAAAA NO SE HACE LA ANIMACION DE MORIR, PERO SI QUE ESPERA EL TIEMPO PUESTO
         {
             timerDeath += Time.deltaTime;
 
