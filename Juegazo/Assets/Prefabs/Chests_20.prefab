@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1345326947277548003}
   - component: {fileID: -241441611288544477}
   - component: {fileID: 7867503945773268330}
+  - component: {fileID: 4260527807647746269}
   m_Layer: 0
   m_Name: Chests_20
   m_TagString: Chest
@@ -160,3 +161,16 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &4260527807647746269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8947364444199075618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5860e3d91beb8f540a44bbbbfb8cf90b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Chest
+  recogido: 0

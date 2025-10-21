@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4898678286139184523}
   m_Layer: 0
   m_Name: nature_environment_01_114
-  m_TagString: Dead
+  m_TagString: Damage
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

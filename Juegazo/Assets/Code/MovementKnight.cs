@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
-public class Movement1 : MonoBehaviour
+public class MovementKnight : MonoBehaviour
 {
     /*
     
@@ -12,7 +11,7 @@ public class Movement1 : MonoBehaviour
 
     */
 
-    [SerializeField] Rigidbody2D rb;
+    public Rigidbody2D rb;
     [SerializeField] BoxCollider2D coll;
     [SerializeField] CapsuleCollider2D collNormal;
     [SerializeField] CapsuleCollider2D collCrouching;
@@ -23,21 +22,38 @@ public class Movement1 : MonoBehaviour
     [SerializeField] LayerMask jumpableGround;
     [SerializeField] LayerMask leftWall;
     [SerializeField] LayerMask rightWall;
-    [SerializeField] int vidas = 3;
-
     enum AnimationType { idle, running, crouching, jumping, transitioning, falling, attacking, death, wallSlide, crouchingTrans, crouchingWalk }
     AnimationType state = AnimationType.idle;
 
     SpriteRenderer sr;
     Animator animator;
 
+    private Interactions interactions;
+
+    [SerializeField] private UIManager uiManager;
+
     bool isCrouched = false;
+
+    [SerializeField] private float tiempoInvencible = 1f;
+    private bool esInvencible = false;
+    private float timerInvencible = 0f;
+
+    [SerializeField] private GameObject vidaCero;
+    [SerializeField] private float duracionAnimacionDeath = 0.5f;
+
+    private bool estaMuerto = false;
+    private float timerDeath = 0f;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
+        interactions = FindAnyObjectByType<Interactions>();
+
+        if (uiManager == null) Debug.LogError("UIManager no encontrado");
+
+
         collNormal.enabled = true;
         collCrouching.enabled = false;
     }
@@ -208,6 +224,34 @@ public class Movement1 : MonoBehaviour
             rb.linearVelocityX = 0f;
         }
 
+        // --------------------- al recibir daño ----------------- 
+        if (esInvencible)
+        {
+            timerInvencible += Time.deltaTime;
+
+            float alpha = Mathf.PingPong(Time.time * 5f, 1f); // parpadeo
+            sr.color = new Color(1f, 1f, 1f, alpha);
+
+            if (timerInvencible >= tiempoInvencible)
+            {
+                esInvencible = false;
+                sr.color = new Color(1f, 1f, 1f, 1f); // vuelve a estar normal
+            }
+        }
+
+        // al morir se espera a la animacion death, luego se reinicia
+
+        // FALLAAAAA NO SE HACE LA ANIMACION DE MORIR, PERO SI QUE ESPERA EL TIEMPO PUESTO
+        if (estaMuerto)
+        {
+            timerDeath += Time.deltaTime;
+
+            if (timerDeath >= duracionAnimacionDeath)
+            {
+                interactions.ReiniciarJuego();
+            }
+        }
+
         animator.SetInteger("state", (int)state);
     }
 
@@ -238,17 +282,41 @@ public class Movement1 : MonoBehaviour
         rightWall
     );
 
-    private void ReiniciarJuego()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Dead"))
+        if (!estaMuerto && (collision.gameObject.CompareTag("Dead") || uiManager.vidaActual <= 0))
         {
             state = AnimationType.death;
-            ReiniciarJuego();
+            animator.SetInteger("state", (int)state);
+
+            rb.linearVelocityX = 0;
+            rb.linearVelocityY = 0;
+
+            if (vidaCero != null)
+            {
+                vidaCero.SetActive(true);
+            }
+
+            for (int i = 0; i < uiManager.vidas.Length; i++)
+            {
+                uiManager.vidas[i].SetActive(false);
+            }
+
+            estaMuerto = true;
+            timerDeath = 0f;
+        }
+    }
+
+    public void RecibirDano()
+    {
+        if (!esInvencible && !estaMuerto && uiManager.vidaActual > 0)
+        {
+            Debug.Log("RecibirDano llamado! esInvencible=" + esInvencible + " estaMuerto=" + estaMuerto + " vida=" + uiManager.vidaActual);
+
+
+            uiManager.RecibirDano();
+            esInvencible = true;
+            timerInvencible = 0f;
         }
     }
 }
