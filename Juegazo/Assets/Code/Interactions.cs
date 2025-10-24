@@ -48,6 +48,11 @@ public class Interactions : MonoBehaviour
         {
             movementKnight.RecibirDano();
         }
+
+        if (collision.CompareTag("castle"))
+        {
+            SceneManager.LoadScene("winMenu");
+        }
     }
 
     public void ReiniciarJuego()

@@ -1,16 +1,12 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class loseSceneControl : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    [SerializeField] GameObject volverAlInicio;
 
-    // Update is called once per frame
-    void Update()
+    public void VolverInicio()
     {
-        
+        SceneManager.LoadScene("startMenu");
     }
 }

@@ -736,7 +736,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 3}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &784686170
@@ -786,8 +786,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1060,8 +1060,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1435606659}
-        m_TargetAssemblyTypeName: ScenesControl, Assembly-CSharp
-        m_MethodName: Salir
+        m_TargetAssemblyTypeName: loseSceneControl, Assembly-CSharp
+        m_MethodName: VolverInicio
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1118,12 +1118,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1435606654}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8976b87b65c91a74aa9021bae7f5be0f, type: 3}
+  m_Script: {fileID: 11500000, guid: 76cb26be7ae24b54b912227fa14d8a37, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScenesControl
-  pressAnyKeyButton: {fileID: 0}
-  startButton: {fileID: 0}
-  exitButton: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::loseSceneControl
+  volverAlInicio: {fileID: 0}
 --- !u!1 &1521933684
 GameObject:
   m_ObjectHideFlags: 0
