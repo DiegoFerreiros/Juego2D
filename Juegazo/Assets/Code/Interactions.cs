@@ -52,6 +52,6 @@ public class Interactions : MonoBehaviour
 
     public void ReiniciarJuego()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene("loseMenu");
     }
 }
