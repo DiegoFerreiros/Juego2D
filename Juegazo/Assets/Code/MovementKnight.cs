@@ -4,12 +4,45 @@ using UnityEngine.InputSystem;
 public class MovementKnight : MonoBehaviour
 {
     /*
-    
-    Checkpoints 
-    Guia de controles al empezar a jugar 
-    Menú de inicio y fin 
 
-    Pantalla inicio/muerte a lo dark souls con degradado como si se escurece la pantalla hasta llegar a la de muerte
+
+Inicio
+
+        Al abrir el juego: se ve un botón Press Any Key.
+
+        Al pulsarlo:
+
+        Se oculta ese botón.
+
+        Se muestran dos botones: Jugar y Salir.
+
+    Botones:
+
+        Jugar → carga escena Juego.
+
+        Salir → cierra la aplicación (Application.Quit()).
+
+Juego
+
+    Tu juego normal.
+
+        Al morir → carga escena Muerte.
+
+        Al ganar → carga escena Win.
+
+Muerte
+
+    Botones:
+
+        Reaparecer → carga escena Juego.
+
+        Salir al menú → carga escena Inicio.
+
+Win
+
+    Botón:
+
+        Salir al menú → carga escena Inicio.
 
     */
 
@@ -45,6 +78,8 @@ public class MovementKnight : MonoBehaviour
 
     private bool estaMuerto = false;
     private float timerDeath = 0f;
+    [SerializeField] AudioSource audioSaltar;
+    [SerializeField] AudioClip sonidoSaltar;
 
     void Start()
     {
@@ -65,6 +100,7 @@ public class MovementKnight : MonoBehaviour
         // --------------------- moverse en el suelo ----------------- 
         if (isGround())
         {
+            /*
             if (Keyboard.current.ctrlKey.wasPressedThisFrame)
             {
                 isCrouched = !isCrouched; // Toggle
@@ -90,6 +126,7 @@ public class MovementKnight : MonoBehaviour
                     }
                 }
             }
+            */
 
             // --- Si está agachado ---
             if (isCrouched)
@@ -152,6 +189,7 @@ public class MovementKnight : MonoBehaviour
                 {
                     state = AnimationType.jumping;
                     rb.linearVelocityY = 5f;
+                    audioSaltar.PlayOneShot(sonidoSaltar);
                 }
             }
         }
@@ -196,6 +234,7 @@ public class MovementKnight : MonoBehaviour
                 float jumpX = isRightWall() ? -5f : 5f;
                 float jumpY = 5f;
                 rb.linearVelocity = new Vector2(jumpX, jumpY);
+                audioSaltar.PlayOneShot(sonidoSaltar);
             }
         }
         else if (!isGround())
