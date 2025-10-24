@@ -9,4 +9,10 @@ public class loseSceneControl : MonoBehaviour
     {
         SceneManager.LoadScene("startMenu");
     }
+
+
+    public void reiniciar()
+    {
+        SceneManager.LoadScene("main");
+    }
 }
